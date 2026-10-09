@@ -1,0 +1,44 @@
+[
+  {
+    "id": "1",
+    "name": "Aarav Mehta",
+    "email": "aarav@example.com",
+    "archived": false
+  },
+  {
+    "id": "2",
+    "name": "Diya Shah",
+    "email": "diya@example.com",
+    "archived": false
+  },
+  {
+    "id": "3",
+    "name": "Ishaan Rao",
+    "email": "ishaan@example.com",
+    "archived": false
+  },
+  {
+    "id": "4",
+    "name": "Kavya Iyer",
+    "email": "kavya@example.com",
+    "archived": false
+  },
+  {
+    "id": "5",
+    "name": "Neha Kapoor",
+    "email": "neha@example.com",
+    "archived": false
+  },
+  {
+    "id": "6",
+    "name": "Rohan Joshi",
+    "email": "rohan@example.com",
+    "archived": false
+  },
+  {
+    "id": "7",
+    "name": "Ananya Sen",
+    "email": "ananya@example.com",
+    "archived": true
+  }
+]

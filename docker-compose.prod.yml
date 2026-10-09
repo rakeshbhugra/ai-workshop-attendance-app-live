@@ -1,0 +1,72 @@
+# Production-shaped stack — `make up`.
+#
+# One app container (SPA + API from the single root Dockerfile) plus Postgres.
+# This is what a deployment looks like: no bind mounts, no reload, no Vite, no
+# debugger, JSON logs, migrations applied at startup.
+#
+# Run it locally before you ship, because it is the only configuration that
+# exercises the code path where FastAPI serves the SPA:
+#     make up   ->   http://localhost:8000
+#
+# For a real deployment, take this file as the reference for what the container
+# needs (env vars, health check, migration step) and express it in whatever runs
+# it — ECS task definition, Kubernetes Deployment, Fly machine.
+name: attendance-live-prod
+
+services:
+  # Delete this service (and `depends_on`, and the volume) if the app does not
+  # need Postgres — see docs/database.md. Running a database for an app that
+  # stores nothing is something to patch, back up and pay for, forever.
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: attendance
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-attendance}
+      POSTGRES_DB: attendance
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U attendance"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    # Not published to the host: in production the database is only reachable
+    # from the app, never from the internet.
+
+  app:
+    build:
+      context: . # repo root — the build needs both frontend/ and backend/
+      dockerfile: Dockerfile
+      target: prod
+    environment:
+      ATTENDANCE_DATABASE_URL: postgresql+asyncpg://attendance:${POSTGRES_PASSWORD:-attendance}@db:5432/attendance
+      ATTENDANCE_ENVIRONMENT: prod
+      ATTENDANCE_LOG_JSON: "true"
+      # No CORS: the SPA is served from this same origin.
+      ATTENDANCE_CORS_ORIGINS: "[]"
+      # Real secrets never live in this file. In a deployment they come from the
+      # platform's secret store (SSM Parameter Store, Secrets Manager, K8s
+      # Secret) and land here as plain environment variables.
+      ATTENDANCE_S3_BUCKET: ${ATTENDANCE_S3_BUCKET:-}
+      ATTENDANCE_S3_REGION: ${ATTENDANCE_S3_REGION:-us-east-1}
+      # Sign-in. The dev login is refused in prod, and so is the dev secret.
+      ATTENDANCE_AUTH_DEV_LOGIN: "false"
+      ATTENDANCE_SESSION_SECRET: ${ATTENDANCE_SESSION_SECRET:?set ATTENDANCE_SESSION_SECRET}
+      ATTENDANCE_COOKIE_SECURE: ${ATTENDANCE_COOKIE_SECURE:-true}
+      ATTENDANCE_PUBLIC_URL: ${ATTENDANCE_PUBLIC_URL:-}
+      ATTENDANCE_GOOGLE_CLIENT_ID: ${ATTENDANCE_GOOGLE_CLIENT_ID:-}
+      ATTENDANCE_GOOGLE_CLIENT_SECRET: ${ATTENDANCE_GOOGLE_CLIENT_SECRET:-}
+      ATTENDANCE_ALLOWED_EMAIL_DOMAINS: ${ATTENDANCE_ALLOWED_EMAIL_DOMAINS:-[]}
+      ATTENDANCE_ALLOWED_STAFF_EMAILS: ${ATTENDANCE_ALLOWED_STAFF_EMAILS:-[]}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Host port is configurable because you will eventually run two of these
+      # apps at once and 8000 will already be taken. Set ATTENDANCE_APP_HOST_PORT in
+      # .env; the container port never changes.
+      - "${ATTENDANCE_APP_HOST_PORT:-8001}:8000"
+    restart: unless-stopped
+
+volumes:
+  db-data:

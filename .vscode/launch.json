@@ -1,0 +1,89 @@
+{
+  // Debug configurations. Committed on purpose — "how do I attach a debugger"
+  // should not be tribal knowledge that each person rediscovers.
+  //
+  // JetBrains users: the same thing is a "Python Debug Server" run config on
+  // port 5678 with the identical path mapping.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // The main one. `make dev` already runs the API under debugpy, listening
+      // on 5678 without waiting for a client, so the app boots normally and you
+      // attach whenever you want — including after it has already gone wrong.
+      "name": "Attach to backend (docker dev)",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": { "host": "localhost", "port": 5679 },
+      "pathMappings": [
+        {
+          // Without this the debugger has your file open at a host path while
+          // the process reports a container path, so breakpoints appear to
+          // "not bind" — the single most common reason remote debugging
+          // silently does nothing.
+          "localRoot": "${workspaceFolder}/backend",
+          "remoteRoot": "/app"
+        }
+      ],
+      // Stepping into library internals is almost never what you want.
+      "justMyCode": true
+    },
+    {
+      // If ATTENDANCE_DEBUG_HOST_PORT is set to avoid a port clash with another app,
+      // copy this and change the port to match.
+      "name": "Attach to backend (custom port)",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": { "host": "localhost", "port": 5699 },
+      "pathMappings": [
+        { "localRoot": "${workspaceFolder}/backend", "remoteRoot": "/app" }
+      ],
+      "justMyCode": true
+    },
+    {
+      // Run the API on the host instead of in docker. Faster edit/restart loop,
+      // but you need a database reachable from the host — either `make dev` for
+      // the Postgres container started with make db-up.
+      "name": "Run backend locally (no docker)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["attendance.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"],
+      "cwd": "${workspaceFolder}/backend",
+      "env": { "ATTENDANCE_LOG_JSON": "false" },
+      "justMyCode": true
+    },
+    {
+      // Breakpoints in a failing test, which beats adding print statements.
+      "name": "Debug the backend test under the cursor",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      // --no-cov because coverage tracing and the debugger fight over the same
+      // sys.settrace hook, and breakpoints get skipped.
+      "args": ["${file}", "-v", "--no-cov"],
+      "cwd": "${workspaceFolder}/backend",
+      "justMyCode": false
+    },
+    {
+      "name": "Debug the frontend in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5184",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      // Vite serves sources under /@fs in dev; without this, breakpoints land in
+      // the bundled output instead of your .tsx file.
+      "sourceMapPathOverrides": {
+        "/@fs/*": "/*",
+        "/src/*": "${workspaceFolder}/frontend/src/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      // Both at once: step from a React event handler straight through the HTTP
+      // call into the service that handles it.
+      "name": "Full stack (backend + Chrome)",
+      "configurations": ["Attach to backend (docker dev)", "Debug the frontend in Chrome"]
+    }
+  ]
+}

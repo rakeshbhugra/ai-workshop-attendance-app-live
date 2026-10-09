@@ -1,0 +1,9 @@
+# The dev image builds with ./frontend as its context. node_modules must be
+# excluded: the host's copy is built for the host platform and would shadow the
+# container's, producing native-module errors that look like dependency bugs.
+node_modules
+dist
+*.tsbuildinfo
+.vite
+.env
+.env.*

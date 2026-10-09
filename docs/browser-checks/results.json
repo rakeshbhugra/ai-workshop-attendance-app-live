@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-09",
+  "tool": "Playwright MCP",
+  "app": "http://localhost:5184",
+  "mode": "live PostgreSQL with local development login",
+  "checks": [
+    {
+      "name": "Development login",
+      "passed": true
+    },
+    {
+      "name": "Attendance save persists after reload",
+      "passed": true
+    },
+    {
+      "name": "Attendance search and status filters",
+      "passed": true
+    },
+    {
+      "name": "Invalid participation time rejected without changing saved data",
+      "passed": true
+    },
+    {
+      "name": "Bulk attendance marking",
+      "passed": true
+    },
+    {
+      "name": "Add student and refresh roster",
+      "passed": true
+    },
+    {
+      "name": "Duplicate email inline validation",
+      "passed": true
+    },
+    {
+      "name": "Confirm archive and persist student state",
+      "passed": true
+    },
+    {
+      "name": "Calendar next/previous month",
+      "passed": true
+    },
+    {
+      "name": "Calendar opens correct session attendance",
+      "passed": true
+    },
+    {
+      "name": "Report workshop filter updates chart and summary",
+      "passed": true
+    },
+    {
+      "name": "CSV download matches selected filter (24 rows)",
+      "passed": true
+    },
+    {
+      "name": "All five screens at 1440px",
+      "passed": true
+    },
+    {
+      "name": "All five screens at 1024px",
+      "passed": true
+    },
+    {
+      "name": "All five screens at 390px",
+      "passed": true
+    },
+    {
+      "name": "Schoolnet fonts load",
+      "passed": true
+    },
+    {
+      "name": "Mobile navigation toggle and Escape",
+      "passed": true
+    },
+    {
+      "name": "Simulated API outage displays error",
+      "passed": true
+    },
+    {
+      "name": "Retry recovers after outage",
+      "passed": true
+    },
+    {
+      "name": "Logout protects UI and API",
+      "passed": true
+    },
+    {
+      "name": "Development login after logout",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "desktop.png",
+    "mobile.png"
+  ],
+  "limitations": [
+    "Google OAuth not exercised because credentials are not configured.",
+    "One isolated test student was created and then archived. Original attendance changes were restored."
+  ],
+  "console": "No unexpected console errors on final page. Expected 401/409/422 responses and simulated 503 responses occurred during negative tests."
+}

@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# A new push to the same branch cancels the previous run — no point burning
+# minutes on a commit nobody is waiting for any more.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install dependencies
+        working-directory: backend
+        # --frozen fails if uv.lock is out of date rather than quietly resolving
+        # something different from what was tested locally.
+        run: uv sync --all-groups --frozen
+
+      - name: Lint
+        working-directory: backend
+        run: |
+          uv run ruff check src tests
+          uv run ruff format --check src tests
+
+      - name: Typecheck
+        working-directory: backend
+        run: uv run mypy src
+
+      - name: Test
+        working-directory: backend
+        run: uv run pytest
+
+  # The architecture checks. Their own job so a violation is unmistakable in the
+  # PR checks list rather than buried in lint output.
+  guidelines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency rule (layers point inward)
+        run: python3 scripts/check_dependency_rule.py
+      - name: File length (warns at 150 code lines, fails at 250)
+        run: python3 scripts/check_file_length.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # ci, not install: installs exactly the lockfile and fails if it and
+      # package.json disagree.
+      - run: npm ci
+      - run: npx tsc -b --noEmit
+      - run: npm run test
+      - run: npm run build
+
+  # Proves the thing we actually ship still builds. Catches the class of break
+  # where both halves pass their own tests but the combined image doesn't.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: prod
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

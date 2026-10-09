@@ -1,0 +1,325 @@
+window.MOCK_DATA = {
+  "version": 1,
+  "students": [
+    {
+      "id": "SN1001",
+      "name": "Aarav Sharma",
+      "email": "aarav.sharma@example.com",
+      "college": "Delhi University",
+      "active": true
+    },
+    {
+      "id": "SN1002",
+      "name": "Ananya Patel",
+      "email": "ananya.patel@example.com",
+      "college": "Amity University",
+      "active": true
+    },
+    {
+      "id": "SN1003",
+      "name": "Diya Mehta",
+      "email": "diya.mehta@example.com",
+      "college": "IIT Delhi",
+      "active": true
+    },
+    {
+      "id": "SN1004",
+      "name": "Ishaan Gupta",
+      "email": "ishaan.gupta@example.com",
+      "college": "Delhi University",
+      "active": true
+    },
+    {
+      "id": "SN1005",
+      "name": "Kabir Singh",
+      "email": "kabir.singh@example.com",
+      "college": "Amity University",
+      "active": true
+    },
+    {
+      "id": "SN1006",
+      "name": "Meera Nair",
+      "email": "meera.nair@example.com",
+      "college": "IIT Delhi",
+      "active": true
+    },
+    {
+      "id": "SN1007",
+      "name": "Rohan Desai",
+      "email": "rohan.desai@example.com",
+      "college": "Delhi University",
+      "active": true
+    },
+    {
+      "id": "SN1008",
+      "name": "Sana Khan",
+      "email": "sana.khan@example.com",
+      "college": "Amity University",
+      "active": true
+    },
+    {
+      "id": "SN1009",
+      "name": "Vihaan Joshi",
+      "email": "vihaan.joshi@example.com",
+      "college": "IIT Delhi",
+      "active": true
+    },
+    {
+      "id": "SN1010",
+      "name": "Zoya Ali",
+      "email": "zoya.ali@example.com",
+      "college": "Delhi University",
+      "active": true
+    },
+    {
+      "id": "SN1011",
+      "name": "Arjun Rao",
+      "email": "arjun.rao@example.com",
+      "college": "Amity University",
+      "active": true
+    },
+    {
+      "id": "SN1012",
+      "name": "Neha Verma",
+      "email": "neha.verma@example.com",
+      "college": "IIT Delhi",
+      "active": true
+    }
+  ],
+  "workshops": [
+    {
+      "id": "ai",
+      "title": "AI Essentials",
+      "description": "A hands-on introduction to generative AI, prompting, and everyday productivity.",
+      "category": "Artificial intelligence",
+      "facilitator": "Priya Menon",
+      "email": "priya.menon@example.com",
+      "dates": "09\u201330 Oct 2026",
+      "days": "Friday \u00b7 10:00\u201312:00",
+      "location": "Innovation Lab \u00b7 Room 204",
+      "active": true,
+      "studentIds": [
+        "SN1001",
+        "SN1002",
+        "SN1003",
+        "SN1004",
+        "SN1005",
+        "SN1006",
+        "SN1007",
+        "SN1008",
+        "SN1009",
+        "SN1010",
+        "SN1011",
+        "SN1012"
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Data Storytelling",
+      "description": "Turn data into clear insights and compelling visual stories.",
+      "category": "Data & analytics",
+      "facilitator": "Aditya Rao",
+      "email": "aditya.rao@example.com",
+      "dates": "12\u201326 Oct 2026",
+      "days": "Monday \u00b7 14:00\u201316:00",
+      "location": "Learning Studio \u00b7 Room 102",
+      "active": true,
+      "studentIds": [
+        "SN1001",
+        "SN1002",
+        "SN1003",
+        "SN1004",
+        "SN1005",
+        "SN1006",
+        "SN1007"
+      ]
+    },
+    {
+      "id": "design",
+      "title": "Design Thinking",
+      "description": "Explore human-centered problem solving through practical challenges.",
+      "category": "Creative skills",
+      "facilitator": "Nisha Kapoor",
+      "email": "nisha.kapoor@example.com",
+      "dates": "14\u201328 Oct 2026",
+      "days": "Wednesday \u00b7 11:00\u201313:00",
+      "location": "Collaboration Hub",
+      "active": true,
+      "studentIds": [
+        "SN1006",
+        "SN1007",
+        "SN1008",
+        "SN1009",
+        "SN1010",
+        "SN1011",
+        "SN1012"
+      ]
+    },
+    {
+      "id": "web",
+      "title": "Web Foundations",
+      "description": "An introduction to building for the web.",
+      "category": "Technology",
+      "facilitator": "Priya Menon",
+      "email": "priya.menon@example.com",
+      "dates": "04\u201325 Sep 2026",
+      "days": "Friday \u00b7 10:00\u201312:00",
+      "location": "Innovation Lab",
+      "active": false,
+      "studentIds": [
+        "SN1001",
+        "SN1002",
+        "SN1003",
+        "SN1004",
+        "SN1005",
+        "SN1006",
+        "SN1007",
+        "SN1008"
+      ]
+    }
+  ],
+  "sessions": [
+    {
+      "id": "ai-1",
+      "workshopId": "ai",
+      "title": "Getting started",
+      "date": "2026-10-09",
+      "start": "10:00",
+      "end": "12:00"
+    },
+    {
+      "id": "ai-2",
+      "workshopId": "ai",
+      "title": "Explore & practice",
+      "date": "2026-10-16",
+      "start": "10:00",
+      "end": "12:00"
+    },
+    {
+      "id": "ai-3",
+      "workshopId": "ai",
+      "title": "Build together",
+      "date": "2026-10-23",
+      "start": "10:00",
+      "end": "12:00"
+    },
+    {
+      "id": "ai-4",
+      "workshopId": "ai",
+      "title": "Showcase",
+      "date": "2026-10-30",
+      "start": "10:00",
+      "end": "12:00"
+    },
+    {
+      "id": "data-1",
+      "workshopId": "data",
+      "title": "Getting started",
+      "date": "2026-10-12",
+      "start": "14:00",
+      "end": "16:00"
+    },
+    {
+      "id": "data-2",
+      "workshopId": "data",
+      "title": "Explore & practice",
+      "date": "2026-10-19",
+      "start": "14:00",
+      "end": "16:00"
+    },
+    {
+      "id": "data-3",
+      "workshopId": "data",
+      "title": "Build together",
+      "date": "2026-10-26",
+      "start": "14:00",
+      "end": "16:00"
+    },
+    {
+      "id": "design-1",
+      "workshopId": "design",
+      "title": "Getting started",
+      "date": "2026-10-14",
+      "start": "11:00",
+      "end": "13:00"
+    },
+    {
+      "id": "design-2",
+      "workshopId": "design",
+      "title": "Explore & practice",
+      "date": "2026-10-21",
+      "start": "11:00",
+      "end": "13:00"
+    },
+    {
+      "id": "design-3",
+      "workshopId": "design",
+      "title": "Build together",
+      "date": "2026-10-28",
+      "start": "11:00",
+      "end": "13:00"
+    }
+  ],
+  "attendance": {
+    "ai-1:SN1001": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1002": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1003": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1004": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1005": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1006": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": "11:45"
+    },
+    "ai-1:SN1007": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": ""
+    },
+    "ai-1:SN1008": {
+      "status": "present",
+      "checkIn": "10:00",
+      "checkOut": ""
+    },
+    "ai-1:SN1009": {
+      "status": "absent",
+      "checkIn": "",
+      "checkOut": ""
+    },
+    "ai-1:SN1010": {
+      "status": "absent",
+      "checkIn": "",
+      "checkOut": ""
+    },
+    "ai-1:SN1011": {
+      "status": "unmarked",
+      "checkIn": "",
+      "checkOut": ""
+    },
+    "ai-1:SN1012": {
+      "status": "unmarked",
+      "checkIn": "",
+      "checkOut": ""
+    }
+  }
+};

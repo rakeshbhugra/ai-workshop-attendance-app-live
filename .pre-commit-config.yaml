@@ -1,0 +1,38 @@
+# Optional but recommended:  pre-commit install
+#
+# Deliberately fast — only checks that finish in well under a second. Slow hooks
+# get bypassed with --no-verify, and a hook everyone bypasses is worse than no
+# hook, because it creates false confidence. mypy and the test suite run in
+# `make check` and in CI instead.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      # Catches an .env or a keypair before it reaches the remote, where
+      # removing it means rewriting history and rotating the secret.
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: local
+    hooks:
+      - id: dependency-rule
+        name: dependency rule (layers point inward)
+        entry: python3 scripts/check_dependency_rule.py
+        language: system
+        pass_filenames: false
+        files: ^backend/src/

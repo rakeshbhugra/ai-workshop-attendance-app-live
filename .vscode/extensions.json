@@ -1,0 +1,14 @@
+{
+  // Suggested on first open. Keeping this in the repo means everyone gets the
+  // same formatting and lint feedback in-editor as CI enforces on the branch —
+  // the alternative is a PR whose diff is half someone else's formatter.
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ]
+}

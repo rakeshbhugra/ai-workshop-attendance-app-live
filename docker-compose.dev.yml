@@ -1,0 +1,114 @@
+# Development stack — `make dev`.
+#
+# Source is bind-mounted, so edits on the host reload in the container:
+#   frontend  http://localhost:5173   (Vite, HMR, proxies /api to the backend)
+#   api       http://localhost:8000   (uvicorn --reload)
+#   docs      http://localhost:8000/docs
+#   debugger  localhost:5678          (attach debugpy)
+#
+# Note the SPA is served by Vite here, not by FastAPI. Production flips that —
+# see the root Dockerfile. The Vite proxy keeps /api same-origin in both, so the
+# frontend code is identical either way.
+name: attendance-live
+
+services:
+  # Postgres is the default, not a requirement. If this app needs only SQLite,
+  # or no database at all, delete this service, its volume, and the `depends_on`
+  # below — then follow docs/database.md, which lists everything else to remove
+  # (the readiness check in particular: leave it in and the container is held
+  # out of the load balancer forever).
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: attendance
+      POSTGRES_PASSWORD: attendance
+      POSTGRES_DB: attendance
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # Published on a non-default port so it can't collide with a Postgres
+      # already running on the host. Connect a GUI client to localhost:55432.
+      - "${ATTENDANCE_DB_HOST_PORT:-55433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U attendance"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    environment:
+      ATTENDANCE_DATABASE_URL: postgresql+asyncpg://attendance:attendance@db:5432/attendance
+      ATTENDANCE_ENVIRONMENT: local
+      ATTENDANCE_LOG_LEVEL: INFO
+      ATTENDANCE_LOG_JSON: "false" # readable console logs locally
+      ATTENDANCE_CORS_ORIGINS: '["http://localhost:5184"]'
+      # Object storage points at LocalStack, which only exists under the `aws`
+      # profile. Without that profile the bucket is unset, so the app falls back
+      # to in-memory storage and nothing breaks.
+      ATTENDANCE_S3_BUCKET: ${ATTENDANCE_S3_BUCKET:-}
+      ATTENDANCE_S3_ENDPOINT_URL: ${ATTENDANCE_S3_ENDPOINT_URL:-}
+      ATTENDANCE_S3_ACCESS_KEY: ${ATTENDANCE_S3_ACCESS_KEY:-}
+      ATTENDANCE_S3_SECRET_KEY: ${ATTENDANCE_S3_SECRET_KEY:-}
+      # The browser's origin, so OAuth sends it back through the Vite proxy.
+      ATTENDANCE_PUBLIC_URL: http://localhost:${ATTENDANCE_WEB_HOST_PORT:-5184}
+      ATTENDANCE_GOOGLE_CLIENT_ID: ${ATTENDANCE_GOOGLE_CLIENT_ID:-}
+      ATTENDANCE_GOOGLE_CLIENT_SECRET: ${ATTENDANCE_GOOGLE_CLIENT_SECRET:-}
+      ATTENDANCE_AUTH_DEV_LOGIN: ${ATTENDANCE_AUTH_DEV_LOGIN:-true}
+      ATTENDANCE_ALLOWED_EMAIL_DOMAINS: ${ATTENDANCE_ALLOWED_EMAIL_DOMAINS:-[]}
+      ATTENDANCE_ALLOWED_STAFF_EMAILS: ${ATTENDANCE_ALLOWED_STAFF_EMAILS:-[]}
+      ATTENDANCE_SESSION_SECRET: ${ATTENDANCE_SESSION_SECRET:-dev-session-secret}
+    volumes:
+      - ./backend:/app # live code; the venv is at /opt/venv so it survives this
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Every host port is configurable — running two of these apps side by side
+      # is normal, and the defaults collide. Override in .env; the container
+      # ports never change, so nothing inside the stack cares.
+      - "${ATTENDANCE_API_HOST_PORT:-8001}:8000" # API + /docs
+      - "${ATTENDANCE_DEBUG_HOST_PORT:-5679}:5678" # debugpy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      VITE_API_PROXY: http://backend:8000
+      VITE_ATTENDANCE_DATA_MODE: live
+    volumes:
+      - ./frontend:/app
+      # Anonymous volume: keeps the container's node_modules instead of letting
+      # the host's (built for a different platform) shadow it.
+      - /app/node_modules
+    depends_on:
+      - backend
+    ports:
+      - "${ATTENDANCE_WEB_HOST_PORT:-5184}:5173"
+
+  # ── opt-in AWS mocks: `make up-aws` ────────────────────────────────────────
+  # LocalStack covers S3, SQS, SNS and Secrets Manager on one endpoint. Off by
+  # default because it is the heaviest thing in the stack and most apps don't
+  # need it on day one.
+  localstack:
+    profiles: ["aws"]
+    image: localstack/localstack:4
+    environment:
+      SERVICES: s3,sqs,sns,secretsmanager
+      DEBUG: "0"
+    ports:
+      - "${ATTENDANCE_LOCALSTACK_HOST_PORT:-4566}:4566"
+    volumes:
+      # Runs once at startup to create the bucket the app expects.
+      - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db-data:

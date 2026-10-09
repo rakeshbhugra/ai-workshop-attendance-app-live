@@ -1,0 +1,24 @@
+import { useQueries } from "@tanstack/react-query";
+import { useWorkspaceStore } from "@/stores/workspace-store";
+import { workspaceApi, workspaceKeys } from "./api";
+import { useSessions, useStudents, useWorkshops } from "./hooks";
+import { PageHead, Metric, summarize, duration, dateLabel, QueryError } from "./ui";
+export function ReportsPage() {
+  const sessionsQuery = useSessions(); const workshopsQuery = useWorkshops(); const studentsQuery = useStudents();
+  const sessions = sessionsQuery.data ?? []; const workshops = workshopsQuery.data ?? []; const students = studentsQuery.data ?? [];
+  const filter = useWorkspaceStore((s) => s.reportWorkshop); const set = useWorkspaceStore((s) => s.set);
+  const selected = sessions.filter((s) => filter === "all" || s.workshopId === filter);
+  const queries = useQueries({ queries: selected.map((s) => ({ queryKey: workspaceKeys.records(s.id), queryFn: () => workspaceApi.records(s.id) })) });
+  const loading = sessionsQuery.isPending || workshopsQuery.isPending || studentsQuery.isPending || queries.some((q) => q.isPending); const failed = sessionsQuery.isError || workshopsQuery.isError || studentsQuery.isError || queries.some((q) => q.isError);
+  const totals = summarize(queries.flatMap((q) => q.data ?? []));
+  function exportCsv() {
+    const rows: (string | number)[][] = [["Student name", "Student ID", "Workshop", "Session", "Date", "Status", "Check-in (IST)", "Check-out (IST)", "Duration minutes"]];
+    selected.forEach((s, i) => queries[i]?.data?.forEach((r) => rows.push([students.find((student) => student.id === r.studentId)?.name ?? "Archived student", r.studentId, workshops.find((w) => w.id === s.workshopId)?.title ?? "", s.title, s.date, r.status, r.checkIn, r.checkOut, duration(r) ?? "Not recorded"])));
+    // Prefix formulas so spreadsheet applications interpret every field as data.
+    const csv = rows.map((row) => row.map((value) => { const text = String(value); return `"${(/^[=+\-@]/.test(text) ? `'${text}` : text).replaceAll('"', '""')}"`; }).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" })); const link = document.createElement("a"); link.href = url; link.download = "workshop-attendance.csv"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  return <><PageHead title="Reports & insights" description="Understand participation. Make the next session count." action={<button className="button primary" disabled={loading || failed || !selected.length} onClick={exportCsv}>↓ Export CSV</button>} /><div className="toolbar"><select aria-label="Filter reports by workshop" value={filter} onChange={(e) => set({ reportWorkshop: e.target.value })}><option value="all">All workshops</option>{workshops.map((w) => <option key={w.id} value={w.id}>{w.title}</option>)}</select></div>
+    {loading ? <p role="status">Loading reports…</p> : failed ? <QueryError retry={() => { void sessionsQuery.refetch(); void workshopsQuery.refetch(); void studentsQuery.refetch(); queries.forEach((q) => void q.refetch()); }} /> : <><div className="metric-row"><Metric label="Attendance rate" value={totals.rate} note="Across marked student-session records" /><Metric label="Present records" value={totals.present} note="Student-session attendance" /><Metric label="Unmarked records" value={totals.unmarked} note="Includes upcoming sessions" /><Metric label="Recorded hours" value={totals.hours.toFixed(1)} note="Complete time records only" /></div><div className="notice">Attendance rate excludes Unmarked records. Missing participation time is not recorded as zero.</div><section className="panel"><h2>Attendance by session</h2><div className="chart">{selected.map((s, i) => { const stat = summarize(queries[i]?.data ?? []); const percentage = stat.present + stat.absent ? stat.present / (stat.present + stat.absent) * 100 : 0; return <div className="bar-group" key={s.id}><div className="bar-number">{stat.rate}</div><div className="bar" style={{ height: `${Math.max(4, percentage * 1.65)}px`, background: percentage ? "var(--blue)" : "var(--line)" }} /><small>{dateLabel(s.date)}</small></div>; })}</div></section><section className="panel reports-summary"><h2>Session summary</h2><div className="table-scroll"><table><thead><tr><th>Workshop / Session</th><th>Date</th><th>Present</th><th>Absent</th><th>Unmarked</th><th>Rate</th></tr></thead><tbody>{selected.map((s, i) => { const stat = summarize(queries[i]?.data ?? []); return <tr key={s.id}><td><strong>{workshops.find((w) => w.id === s.workshopId)?.title}</strong><small>{s.title}</small></td><td>{dateLabel(s.date)}</td><td>{stat.present}</td><td>{stat.absent}</td><td>{stat.unmarked}</td><td>{stat.rate}</td></tr>; })}</tbody></table></div>{!selected.length && <p>No sessions match this workshop.</p>}</section></>}
+  </>;
+}

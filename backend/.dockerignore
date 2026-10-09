@@ -1,0 +1,15 @@
+# The dev image builds with ./backend as its context, so it needs its own
+# ignore list — a root .dockerignore does not apply to a nested context.
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+*.db
+*.sqlite*
+.env
+.env.*

@@ -1,0 +1,30 @@
+# Keep the build context small and the image clean. Everything here is either
+# rebuilt inside the image, host-specific, or must never ship (secrets).
+.git
+.github
+**/node_modules
+**/.venv
+**/venv
+**/dist
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+**/htmlcov
+**/*.db
+**/*.sqlite*
+**/*.tsbuildinfo
+
+# Secrets — a .env copied into an image leaks to anyone who can pull it.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+.idea
+.vscode
+docs
+*.md
+!README.md

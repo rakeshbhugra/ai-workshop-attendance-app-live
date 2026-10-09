@@ -1,0 +1,17 @@
+[
+  {
+    "workshopId": "1",
+    "studentId": "1",
+    "status": "present"
+  },
+  {
+    "workshopId": "1",
+    "studentId": "2",
+    "status": "present"
+  },
+  {
+    "workshopId": "1",
+    "studentId": "5",
+    "status": "absent"
+  }
+]
