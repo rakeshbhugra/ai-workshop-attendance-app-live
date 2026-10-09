@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hello World | Schoolnet</title>
+  <style>
+    @font-face {
+      font-family: Lato; font-style: normal; font-weight: 400; font-display: swap;
+      src: url("https://schoolnetindia.com/static/Lato-Regular-7bda85ac0ee258309c15629c1dec1ac3.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: Lato; font-style: normal; font-weight: 700; font-display: swap;
+      src: url("https://schoolnetindia.com/static/Lato-Bold-a37f84abc8d50ca4e47800e86b3cc862.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: Poppins; font-style: normal; font-weight: 700; font-display: swap;
+      src: url("https://schoolnetindia.com/static/Poppins-Bold-030449ab84abb22fae011681e629158f.woff2") format("woff2");
+    }
+    :root {
+      --green: #0aa34f;
+      --green-readable: #07833f;
+      --blue: #007cdc;
+      --blue-readable: #0068b8;
+      --surface: #f9fafc;
+      --heading: #1d1d1d;
+      --text: #333333;
+      --muted: #626262;
+      --space: 24px;
+      --section-space: 64px;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); font: 400 18px/1.5 Lato, sans-serif; }
+    .container { width: min(100%, 1200px); margin-inline: auto; padding-inline: var(--space); }
+    header, .hero { background: var(--surface); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space); padding-block: 32px; }
+    .logo { display: block; width: 225px; max-width: 100%; height: auto; }
+    nav a { color: var(--muted); text-decoration: none; padding: 12px 0; }
+    nav a:hover { color: var(--green-readable); }
+    .announcement { height: 8px; background: var(--blue); }
+    .hero { padding-block: var(--section-space); }
+    .hero-inner { display: grid; grid-template-columns: 3fr 2fr; align-items: center; gap: 48px; }
+    h1 { margin: 0 0 32px; color: var(--heading); font-size: clamp(32px, 4vw, 48px); line-height: 1.25; letter-spacing: -.01em; }
+    h1 span { color: var(--green); }
+    .intro { max-width: 580px; margin: 0 0 32px; font-size: 22px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; padding: 16px 32px; border-radius: var(--radius); background: var(--green-readable); color: white; font: 700 18px/1.5 Poppins, sans-serif; text-decoration: none; }
+    .button:hover { background: #066d34; }
+    .button:active { transform: translateY(1px); }
+    a:focus-visible { outline: 3px solid var(--blue-readable); outline-offset: 4px; }
+    .art { display: grid; place-items: center; width: min(100%, 320px); aspect-ratio: 1; justify-self: center; border-radius: 50%; background: var(--green); }
+    .art span { color: white; font: 700 80px/1 Poppins, sans-serif; letter-spacing: -.06em; }
+    .welcome { padding-block: var(--section-space); text-align: center; }
+    h2 { margin: 0 0 16px; color: var(--heading); font-size: clamp(27px, 3vw, 36px); line-height: 1.2; letter-spacing: -.01em; }
+    .welcome p { margin: 0; color: var(--muted); }
+    footer { padding: 24px; border-top: 1px solid #e4e8ec; color: var(--muted); font-size: 16px; text-align: center; }
+    @media (max-width: 767px) {
+      .header-inner { padding-block: 24px; }
+      .logo { width: 180px; }
+      .hero, .welcome { padding-block: 40px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+      .intro { font-size: 18px; }
+      .art { width: 220px; }
+      .art span { font-size: 64px; }
+    }
+    @media (max-width: 380px) {
+      .header-inner { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <img class="logo" src="https://schoolnetindia.com/static/372dd395c01da58f8921a5f3877007ff/ec5e3/a.png" alt="Schoolnet — Learning for Life" width="225">
+      <nav aria-label="Main navigation"><a href="#welcome">Welcome</a></nav>
+    </div>
+  </header>
+  <div class="announcement" aria-hidden="true"></div>
+  <main>
+    <section class="hero" aria-labelledby="hello-heading">
+      <div class="container hero-inner">
+        <div>
+          <h1 id="hello-heading">Hello World.<br><span>Let’s start learning.</span></h1>
+          <p class="intro">Every great idea starts with a simple hello. Welcome to your first page, styled with Schoolnet’s learning spirit.</p>
+          <a class="button" href="#welcome">Get Started</a>
+        </div>
+        <div class="art" aria-hidden="true"><span>Hello!</span></div>
+      </div>
+    </section>
+    <section class="container welcome" id="welcome" aria-labelledby="welcome-heading">
+      <h2 id="welcome-heading">A little curiosity. A world of possibilities.</h2>
+      <p>Your learning journey starts here.</p>
+    </section>
+  </main>
+  <footer>A hello world demo inspired by Schoolnet India.</footer>
+</body>
+</html>
