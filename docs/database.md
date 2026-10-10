@@ -66,8 +66,9 @@ git rm backend/src/attendance/adapters/unit_of_work.py \
 
 Then, by hand:
 
-- [ ] **`routes/health.py`** — delete the `("database", _check_database)` entry,
-      `_check_database`, and the now-unused imports. **The trap above.**
+- [ ] **`routes/health.py`** — delete the `("database", check_database)` entry
+      and its import. Delete `config/database_readiness.py` and
+      `wait_for_database.py`. **The trap above.**
 - [ ] **`main.py`** — drop `start_mappers()`, `dispose_engine()`/`reset_engine()`
       and their imports.
 - [ ] **`bootstrap.py`** — drop `get_unit_of_work` and any service taking a UoW.
@@ -76,7 +77,8 @@ Then, by hand:
       `greenlet`. Then `uv lock`.
 - [ ] **compose files** — drop the `db` service, its volume, and both
       `depends_on` blocks.
-- [ ] **`Dockerfile`** — drop `alembic upgrade head &&` from the `CMD`, and the
+- [ ] **Both Dockerfiles** — drop the database wait and migration commands from the `CMD`,
+      switch the health check to `/health`, and remove the
       `COPY backend/alembic` lines. Leaving the migration step in an app with no
       migrations fails the container on boot.
 - [ ] **`tests/conftest.py`** — drop `session_factory`, `session`, `uow` and the

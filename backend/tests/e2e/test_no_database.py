@@ -17,9 +17,14 @@ query to ``/health``, or imports something DB-backed at module scope, it fails.
 
 from __future__ import annotations
 
+import asyncio
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from attendance.config import database_readiness
 from attendance.config.settings import Settings
 from attendance.main import create_app
 
@@ -61,5 +66,33 @@ async def test_readiness_reports_the_database_as_down_without_raising(settings: 
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/health/ready")
 
+    assert response.status_code == 503
+    assert response.json() == {"status": "unavailable", "database": "down"}
+
+
+async def test_readiness_is_ready_with_a_reachable_database():
+    app = create_app(Settings(environment="test", database_url="sqlite+aiosqlite://"))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/health/ready")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready", "database": "up"}
+    await database_readiness.get_engine().dispose()
+
+
+async def test_readiness_times_out_a_stalled_connection(settings, monkeypatch):
+    settings.db_probe_timeout_seconds = 0.01
+
+    @asynccontextmanager
+    async def stalled_connection():
+        await asyncio.sleep(10)
+        yield AsyncMock()
+
+    class StalledEngine:
+        connect = staticmethod(stalled_connection)
+
+    monkeypatch.setattr(database_readiness, "get_engine", lambda: StalledEngine())
+    app = create_app(settings)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await asyncio.wait_for(client.get("/health/ready"), timeout=1)
     assert response.status_code == 503
     assert response.json() == {"status": "unavailable", "database": "down"}

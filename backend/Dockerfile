@@ -26,7 +26,10 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen
 
 EXPOSE 8000 5678
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2.5)"
+
 # debugpy listens on 5678 without waiting for a client, so the app starts
 # normally and you can attach from VS Code / PyCharm whenever you want.
 # --timeout-graceful-shutdown stops --reload hanging on an open connection.
-CMD ["sh", "-c", "alembic upgrade head && python -m debugpy --listen 0.0.0.0:5678 -m uvicorn attendance.main:app --host 0.0.0.0 --port 8000 --reload --timeout-graceful-shutdown 1"]
+CMD ["sh", "-c", "python -m attendance.wait_for_database && alembic upgrade head && exec python -m debugpy --listen 0.0.0.0:5678 -m uvicorn attendance.main:app --host 0.0.0.0 --port 8000 --reload --timeout-graceful-shutdown 1"]
