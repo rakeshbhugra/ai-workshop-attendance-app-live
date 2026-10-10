@@ -9,6 +9,7 @@ container's environment. ``make init NAME=...`` rewrites it.
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # The sign-in cookie's name.
@@ -33,6 +34,9 @@ class Settings(BaseSettings):
     # Tests explicitly override the connection with in-memory SQLite.
     database_url: str = "postgresql+asyncpg://attendance:attendance@localhost:55433/attendance"
     db_echo: bool = False
+    db_probe_timeout_seconds: float = Field(default=2, gt=0)
+    db_startup_timeout_seconds: float = Field(default=60, gt=0)
+    db_startup_retry_seconds: float = Field(default=1, gt=0)
 
     # ── http ────────────────────────────────────────────────────────────────
     # Only needed in dev, where Vite serves the SPA from :5173 and the API is on

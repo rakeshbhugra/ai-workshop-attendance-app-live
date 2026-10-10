@@ -70,13 +70,13 @@ USER appuser
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').status==200 else 1)"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2.5)"
 
 # Migrations run at startup, before the server binds. Fine for a single-container
 # deploy; if you scale to N replicas, move `alembic upgrade head` into a
 # pre-deploy job so N containers don't race to migrate the same database.
 #
-# No database in this app? Drop `alembic upgrade head &&` here and the two
+# No database in this app? Drop the database wait and migration commands here and the two
 # alembic COPY lines above — the migration step fails the container on boot when
 # there is nothing to migrate. Full checklist in docs/database.md.
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn attendance.main:app --host 0.0.0.0 --port 8000 --workers ${WEB_CONCURRENCY:-2} --no-access-log"]
+CMD ["sh", "-c", "python -m attendance.wait_for_database && alembic upgrade head && exec uvicorn attendance.main:app --host 0.0.0.0 --port 8000 --workers ${WEB_CONCURRENCY:-2} --no-access-log"]

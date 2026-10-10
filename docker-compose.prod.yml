@@ -26,7 +26,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U attendance"]
+      test: ["CMD-SHELL", "pg_isready -U attendance -d attendance"]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -40,6 +40,8 @@ services:
       target: prod
     environment:
       ATTENDANCE_DATABASE_URL: postgresql+asyncpg://attendance:${POSTGRES_PASSWORD:-attendance}@db:5432/attendance
+      ATTENDANCE_DB_STARTUP_TIMEOUT_SECONDS: ${ATTENDANCE_DB_STARTUP_TIMEOUT_SECONDS:-60}
+      ATTENDANCE_DB_STARTUP_RETRY_SECONDS: ${ATTENDANCE_DB_STARTUP_RETRY_SECONDS:-1}
       ATTENDANCE_ENVIRONMENT: prod
       ATTENDANCE_LOG_JSON: "true"
       # No CORS: the SPA is served from this same origin.

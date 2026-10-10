@@ -24,20 +24,13 @@ from collections.abc import Awaitable, Callable
 
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from sqlalchemy import text
 
-from attendance.config.database import get_engine
+from attendance.config.database_readiness import check_database
 from attendance.config.logging import get_logger
 from attendance.config.settings import get_settings
 
 router = APIRouter(tags=["meta"])
 log = get_logger(__name__)
-
-
-async def _check_database() -> None:
-    """Raises if the database is unreachable."""
-    async with get_engine().connect() as conn:
-        await conn.execute(text("SELECT 1"))
 
 
 # One entry per dependency this process needs before it can serve traffic. Add
@@ -46,7 +39,7 @@ async def _check_database() -> None:
 # without — checking something optional here converts a degraded feature into a
 # total outage.
 READINESS_CHECKS: list[tuple[str, Callable[[], Awaitable[None]]]] = [
-    ("database", _check_database),
+    ("database", check_database),
 ]
 
 
@@ -65,7 +58,7 @@ async def ready() -> JSONResponse:
         try:
             await check()
         except Exception as exc:  # noqa: BLE001 - readiness must report, never raise
-            log.warning("readiness_check_failed", dependency=name, error=str(exc))
+            log.warning("readiness_check_failed", dependency=name, error_type=type(exc).__name__)
             results[name] = "down"
             healthy = False
         else:
